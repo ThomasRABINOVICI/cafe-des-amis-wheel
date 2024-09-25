@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le Café Des Amis - Review and Spin</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            position: relative;
+        }
+        .restaurant-name {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        #wheel {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            transition: transform 15s cubic-bezier(0.25, 0.1, 0.25, 1);
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .section {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            transform-origin: center;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            font-weight: bold;
+            font-size: 14px;
+            color: white;
+            text-align: right;
+            box-sizing: border-box;
+            padding-right: 40px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        #spin, #leaveReview, #proceedToSpin {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        #spin:hover, #leaveReview:hover, #proceedToSpin:hover {
+            background-color: #45a049;
+        }
+        #spin:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        #result {
+            margin-top: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        #pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 40px solid black;
+            z-index: 10;
+        }
+        #emailForm {
+            margin-top: 20px;
+            display: none;
+        }
+        #emailInput {
+            padding: 10px;
+            font-size: 16px;
+            width: 200px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #submitEmail {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-left: 10px;
+            background-color: #008CBA;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        #submitEmail:hover {
+            background-color: #007B9A;
+        }
+        #reviewPage, #spinPage {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="restaurant-name">Le Café Des Amis</h1>
+        <div id="mainPage">
+            <p>Please leave a review to spin the wheel and win a prize!</p>
+            <button id="leaveReview">Leave a Review</button>
+        </div>
+        <div id="reviewPage">
+            <p>Click the button below to open our Google My Business page and leave a review:</p>
+            <button id="openGoogleReview">Open Google Review Page</button>
+            <p>After leaving your review, click the button below to proceed:</p>
+            <button id="proceedToSpin">I've left a review</button>
+        </div>
+        <div id="spinPage">
+            <div id="wheel"></div>
+            <div id="pointer"></div>
+            <button id="spin">Spin the Wheel</button>
+            <div id="result"></div>
+            <div id="emailForm">
+                <input type="email" id="emailInput" placeholder="Enter your email" required>
+                <button id="submitEmail">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const mainPage = document.getElementById('mainPage');
+        const reviewPage = document.getElementById('reviewPage');
+        const spinPage = document.getElementById('spinPage');
+        const leaveReviewBtn = document.getElementById('leaveReview');
+        const openGoogleReviewBtn = document.getElementById('openGoogleReview');
+        const proceedToSpinBtn = document.getElementById('proceedToSpin');
+        const wheel = document.getElementById('wheel');
+        const spinBtn = document.getElementById('spin');
+        const result = document.getElementById('result');
+        const emailForm = document.getElementById('emailForm');
+        const emailInput = document.getElementById('emailInput');
+        const submitEmail = document.getElementById('submitEmail');
+
+        const prizes = [
+            { text: 'A meal', color: '#FF6B6B' },
+            { text: 'A coffee', color: '#4ECDC4' },
+            { text: '$5 off', color: '#45B7D1' }
+        ];
+
+        // Create wheel sections
+        prizes.forEach((prize, index) => {
+            const section = document.createElement('div');
+            section.className = 'section';
+            section.style.backgroundColor = prize.color;
+            section.style.transform = `rotate(${index * 120}deg) skew(60deg)`;
+            
+            const span = document.createElement('span');
+            span.textContent = prize.text;
+            span.style.transform = 'skew(-60deg) rotate(30deg)';
+            span.style.transformOrigin = 'right center';
+            span.style.display = 'inline-block';
+            span.style.width = '100%';
+            
+            section.appendChild(span);
+            wheel.appendChild(section);
+        });
+
+        let wonPrize = '';
+
+        leaveReviewBtn.addEventListener('click', () => {
+            mainPage.style.display = 'none';
+            reviewPage.style.display = 'block';
+        });
+
+        openGoogleReviewBtn.addEventListener('click', () => {
+            // Replace this URL with the actual Google My Business page URL for Le Café Des Amis
+            window.open('https://g.page/r/EXAMPLE_GOOGLE_REVIEW_LINK', '_blank');
+        });
+
+        proceedToSpinBtn.addEventListener('click', () => {
+            reviewPage.style.display = 'none';
+            spinPage.style.display = 'block';
+        });
+
+        spinBtn.addEventListener('click', () => {
+            spinBtn.disabled = true;
+            result.textContent = '';
+            emailForm.style.display = 'none';
+
+            const randomAngle = Math.floor(Math.random() * 360);
+            const extraRotations = 25 * 360;
+            const totalRotation = extraRotations + randomAngle;
+
+            wheel.style.transform = `rotate(${totalRotation}deg)`;
+
+            setTimeout(() => {
+                const prizeIndex = Math.floor(randomAngle / 120);
+                wonPrize = prizes[prizeIndex].text;
+                result.textContent = `You won: ${wonPrize}!`;
+                spinBtn.disabled = false;
+                emailForm.style.display = 'block';
+            }, 15000);
+        });
+
+        submitEmail.addEventListener('click', () => {
+            const email = emailInput.value;
+            if (email) {
+                // Here you would typically send this data to your server
+                console.log(`Prize: ${wonPrize}, Email: ${email}`);
+                alert(`Thank you! Your prize (${wonPrize}) will be sent to ${email}`);
+                emailForm.style.display = 'none';
+                emailInput.value = '';
+            } else {
+                alert('Please enter a valid email address.');
+            }
+        });
+    </script>
+</body>
+</html>
